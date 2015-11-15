@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Openit</string>
+    <string name="action_settings">Settings</string>
+    <string name="sample_show_log">SHOW_LOG</string>
+    <string name="sample_hide_log">HIDE_LOG</string>
+    <string name="display_init">
+        <![CDATA[
+
+
+            一个比较简Low的App，略缺。\n见谅。
+
+
+        ]]>
+    </string>
+</resources>
