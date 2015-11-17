@@ -12,4 +12,6 @@
 
         ]]>
     </string>
+    <string name="apply_info">请刷需要添加的新NFC卡片...</string>
+    <string name="apply_edit">填写NFC卡片名称...</string>
 </resources>

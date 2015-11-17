@@ -1,15 +1,23 @@
 package com.mclss.openit.Activities;
 
+import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.ViewAnimator;
 
 import com.mclss.openit.R;
@@ -18,14 +26,18 @@ import com.mclss.openit.logger.LogFragment;
 import com.mclss.openit.logger.LogWrapper;
 import com.mclss.openit.logger.MessageOnlyLogFilter;
 
-import java.io.File;
-import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
 
     private boolean mLogShown;
+    private ListView mInfoListView;
+    private ArrayAdapter<String> mAddressName;
+    private List<String> mAddr;
+    private List<String> mNfcId;
 
     @Override
     protected  void onStart() {
@@ -48,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("DONATE", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                Uri uri= Uri.parse("http://www.mclss.com");
+                                Uri uri = Uri.parse("http://www.mclss.com");
                                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                                 startActivity(intent);
                             }
@@ -56,6 +68,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        FloatingActionButton add = (FloatingActionButton) findViewById(R.id.add);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        if (!initializeData()) {
+            Snackbar.make(mInfoListView, "并没有找到存储的nfc卡片信息。", Snackbar.LENGTH_LONG).show();
+        }
+        initializeView();
     }
 
     @Override
@@ -83,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mLogShown) {
                     output.setDisplayedChild(1);
                 } else {
-                    output.setDisplayedChild(0);
+                    output.setDisplayedChild(2);
                 }
                 supportInvalidateOptionsMenu();
                 return true;
@@ -109,11 +133,67 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i(TAG, "Ready");
 
-        File[] files = new File("/etc").listFiles();
-        for (File file : files) {
-            if(file.getName().length() >= 0){
-                Log.i(TAG, file.getPath());
+//        File[] files = new File("/etc").listFiles();
+//        for (File file : files) {
+//            if(file.getName().length() >= 0){
+//                Log.i(TAG, file.getPath());
+//            }
+//        }
+
+        Log.i(TAG, "Adapter count=" + mInfoListView.getCount());
+    }
+
+    private boolean initializeData() {
+
+        initializePreference();
+
+        mAddressName = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, mAddr);
+
+        return true;
+    }
+
+    private void initializePreference() {
+        SharedPreferences sharedPreferences = getSharedPreferences("token",
+                Activity.MODE_PRIVATE);
+
+        String strIndex = "Home,Office,Partner,Sex Partner";
+//        String strIndex = "";
+        String[] strAddr = strIndex.split(",");
+        mAddr = Arrays.asList(strAddr);
+
+        String strNfcIndex = "01B9551B,01B9551B,01B9551B,01B9551B";
+        String[] strNfcId = strNfcIndex.split(",");
+        mNfcId = Arrays.asList(strNfcId);
+
+    }
+
+    private void initializeView() {
+        mInfoListView = (ListView)findViewById(R.id.info_listView);
+        mInfoListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        mInfoListView.setAdapter(mAddressName);
+
+        mInfoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i(TAG, "Click:pos=" + position + ",id=" + id);
+                String tmpAddr = "确认切换到" + mAddr.get(Long.valueOf(id).intValue()) + "吗？";
+                AlertDialog.Builder applyDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                applyDialogBuilder.setMessage(tmpAddr);
+                applyDialogBuilder.setTitle("切换NFC卡片");
+                applyDialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                applyDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                applyDialogBuilder.create().show();
             }
-        }
+        });
     }
 }
