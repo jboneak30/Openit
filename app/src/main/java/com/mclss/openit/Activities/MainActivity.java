@@ -26,6 +26,8 @@ import com.mclss.openit.logger.LogFragment;
 import com.mclss.openit.logger.LogWrapper;
 import com.mclss.openit.logger.MessageOnlyLogFilter;
 
+import java.io.DataOutputStream;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> mAddressName;
     private List<String> mAddr;
     private List<String> mNfcId;
+    private File file;
 
     @Override
     protected  void onStart() {
@@ -76,10 +79,63 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if (!getRootAuth()) {
+            Snackbar.make(mInfoListView, "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
+        }
+
         if (!initializeData()) {
             Snackbar.make(mInfoListView, "并没有找到存储的nfc卡片信息。", Snackbar.LENGTH_LONG).show();
         }
+
+        if (!initializeFile()) {
+
+        }
+
         initializeView();
+    }
+
+    private boolean initializeFile() {
+
+        return false;
+    }
+
+    public synchronized boolean getRootAuth()
+    {
+        Process process = null;
+        DataOutputStream os = null;
+        try
+        {
+            process = Runtime.getRuntime().exec("su");
+            os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes("exit\n");
+            os.flush();
+            int exitValue = process.waitFor();
+            if (exitValue == 0)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        } catch (Exception e)
+        {
+            Log.d("*** DEBUG ***", "Unexpected error - Here is what I know: "
+                    + e.getMessage());
+            return false;
+        } finally
+        {
+            try
+            {
+                if (os != null)
+                {
+                    os.close();
+                }
+                process.destroy();
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -174,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
         mInfoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
                 Log.i(TAG, "Click:pos=" + position + ",id=" + id);
                 String tmpAddr = "确认切换到" + mAddr.get(Long.valueOf(id).intValue()) + "吗？";
                 AlertDialog.Builder applyDialogBuilder = new AlertDialog.Builder(MainActivity.this);
@@ -183,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
                 applyDialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        applyChangeForNfcId(id);
                         dialog.dismiss();
                     }
                 });
@@ -192,8 +249,13 @@ public class MainActivity extends AppCompatActivity {
                         dialog.dismiss();
                     }
                 });
+                applyDialogBuilder.setCancelable(false);
                 applyDialogBuilder.create().show();
             }
         });
+    }
+
+    private void applyChangeForNfcId(long id) {
+
     }
 }
