@@ -26,21 +26,33 @@ import com.mclss.openit.logger.LogFragment;
 import com.mclss.openit.logger.LogWrapper;
 import com.mclss.openit.logger.MessageOnlyLogFilter;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
 
+    private final String NFC_NXP_FILENAME = "/etc/libnfc-nxp.conf";
+    private final String NFC_BRM_FILENAME = "/etc/libnfc-nxp.conf";
+
     private boolean mLogShown;
     private ListView mInfoListView;
     private ArrayAdapter<String> mAddressName;
     private List<String> mAddr;
     private List<String> mNfcId;
-    private File file;
+    private ArrayList<String> mStrArrayFile;
+    private int mKeyStrIndex;
 
     @Override
     protected  void onStart() {
@@ -88,15 +100,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!initializeFile()) {
-
+//            Snackbar.make(mInfoListView, "并不能修改NFC卡片信息。", Snackbar.LENGTH_LONG).show();
         }
 
         initializeView();
     }
 
     private boolean initializeFile() {
+        try {
+            // read file content from file
+            FileReader reader = new FileReader(NFC_NXP_FILENAME);
+            BufferedReader br = new BufferedReader(reader);
+            String tmpStr;
+            int i = 0;
+            while((tmpStr = br.readLine()) != null) {
+                mStrArrayFile.add(tmpStr);
+                if (!tmpStr.isEmpty() && tmpStr.toCharArray()[0] != '#' && tmpStr.split("=")[0].compareTo("NXP_CORE_CONF") == 0) {
+                    mKeyStrIndex = i + 6;
+                }
+                i++;
+            }
 
-        return false;
+            reader.close();
+            br.close();
+        }
+
+        catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     public synchronized boolean getRootAuth()
@@ -200,9 +233,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean initializeData() {
-
         initializePreference();
-
+        mStrArrayFile = new ArrayList<String>();
         mAddressName = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, mAddr);
 
         return true;
@@ -256,6 +288,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applyChangeForNfcId(long id) {
+//        for (String tmpStr:mStrArrayFile) {
+//            Log.i(TAG, tmpStr);
+//        }
+        int uid = Long.valueOf(id).intValue();
+        String strUID = mNfcId.get(uid);
+        String tmpStr = mStrArrayFile.get(mKeyStrIndex);
+        String[] tmpStrSplit = tmpStr.split(",");
+        String tmpNewStr = tmpStrSplit[0] + "," + tmpStrSplit[1] + ", "
+                + strUID.substring(0, 2) + ", "
+                + strUID.substring(2, 4) + ", "
+                + strUID.substring(4, 6) + ", "
+                + strUID.substring(6, 8);
 
+        mStrArrayFile.set(mKeyStrIndex, tmpNewStr);
+
+        applyFileOfNfc();
+
+//        Log.i(TAG, mStrArrayFile.get(mKeyStrIndex));
+    }
+
+    private void applyFileOfNfc() {
+        try {
+            FileWriter fw = new FileWriter(NFC_NXP_FILENAME);
+            BufferedWriter writer = new BufferedWriter(fw);
+
+            for (String aMStrArrayFile : mStrArrayFile) {
+                writer.write(aMStrArrayFile);
+                writer.newLine();//换行
+            }
+
+            writer.flush();
+
+            fw.close();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
     }
 }
