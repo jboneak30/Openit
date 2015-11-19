@@ -28,12 +28,16 @@ import com.mclss.openit.logger.MessageOnlyLogFilter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -45,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final String NFC_NXP_FILENAME = "/etc/libnfc-nxp.conf";
     private final String NFC_BRM_FILENAME = "/etc/libnfc-nxp.conf";
+    private final String NFC_CACHE_FILENAME = "/data/data/com.mclss.openit/cache/openitcachefile.conf";
 
     private boolean mLogShown;
     private ListView mInfoListView;
@@ -53,9 +58,10 @@ public class MainActivity extends AppCompatActivity {
     private List<String> mNfcId;
     private ArrayList<String> mStrArrayFile;
     private int mKeyStrIndex;
+    private String mStrMountInfo;
 
     @Override
-    protected  void onStart() {
+    protected void onStart() {
         super.onStart();
         initializeLogging();
     }
@@ -92,18 +98,52 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (!getRootAuth()) {
-            Snackbar.make(mInfoListView, "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
+            if (getCurrentFocus() != null) {
+                Snackbar.make(getCurrentFocus(), "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
+            }
         }
 
         if (!initializeData()) {
-            Snackbar.make(mInfoListView, "并没有找到存储的nfc卡片信息。", Snackbar.LENGTH_LONG).show();
+            if (getCurrentFocus() != null) {
+                Snackbar.make(getCurrentFocus(), "并没有找到存储的nfc卡片信息。", Snackbar.LENGTH_LONG).show();
+            }
+        }
+
+        if (!initializeMountInfo()) {
+            if (getCurrentFocus() != null) {
+                Snackbar.make(getCurrentFocus(), "并没有找到存储的nfc卡片信息。", Snackbar.LENGTH_LONG).show();
+            }
         }
 
         if (!initializeFile()) {
-//            Snackbar.make(mInfoListView, "并不能修改NFC卡片信息。", Snackbar.LENGTH_LONG).show();
+            if (getCurrentFocus() != null) {
+                Snackbar.make(getCurrentFocus(), "并不能修改NFC卡片信息。", Snackbar.LENGTH_LONG).show();
+            }
         }
 
         initializeView();
+
+    }
+
+    private boolean initializeMountInfo() {
+        String tmpStr = "";
+
+        try {
+            tmpStr = execCommand("mount");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String[] tmpStrArray = tmpStr.split("\n");
+        for (String str:tmpStrArray
+                ) {
+            if (str.contains("/system")) {
+                mStrMountInfo = str.split(",")[0];
+                return true;
+            }
+        }
+
+        mStrMountInfo = "";
+        return false;
     }
 
     private boolean initializeFile() {
@@ -230,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         Log.i(TAG, "Adapter count=" + mInfoListView.getCount());
+        Log.i(TAG, "System mount info=" + mStrMountInfo);
     }
 
     private boolean initializeData() {
@@ -237,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
         mStrArrayFile = new ArrayList<String>();
         mAddressName = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, mAddr);
 
-        return true;
+        return false;
     }
 
     private void initializePreference() {
@@ -310,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void applyFileOfNfc() {
         try {
-            FileWriter fw = new FileWriter(NFC_NXP_FILENAME);
+            FileWriter fw = new FileWriter(NFC_CACHE_FILENAME);
             BufferedWriter writer = new BufferedWriter(fw);
 
             for (String aMStrArrayFile : mStrArrayFile) {
@@ -323,9 +364,94 @@ public class MainActivity extends AppCompatActivity {
             fw.close();
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.i(TAG, e.getMessage());
         } finally {
 
         }
+
+        testCmd();
+    }
+
+    private void testCmd() {
+        Process suProcess;
+        DataOutputStream os;
+        String result = "";
+
+        try{
+            suProcess = Runtime.getRuntime().exec("su");
+            os= new DataOutputStream(suProcess.getOutputStream());
+            InputStream in = suProcess.getInputStream();
+
+            os.writeBytes("mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system\n");
+            os.flush();
+
+            os.writeBytes("rm /system/etc/libnfc-nxp.conf.bak\n");
+            os.flush();
+
+            os.writeBytes("cp -rf /system/etc/libnfc-nxp.conf /system/etc/libnfc-nxp.conf.bak\n");
+            os.flush();
+
+            os.writeBytes("cp -rf /data/data/com.mclss.openit/cache/openitcachefile.conf /system/etc/libnfc-nxp.conf\n");
+            os.flush();
+
+            os.writeBytes("mount -o ro,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system\n");
+            os.flush();
+
+            os.writeBytes("exit\n");
+            os.flush();
+
+            try {
+                suProcess.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String execCommand(String command) throws IOException {
+        Process process = new ProcessBuilder()
+                .command(command)
+                .redirectErrorStream(true)
+                .start();
+        try {
+            InputStream in = process.getInputStream();
+            DataOutputStream out = new DataOutputStream(process.getOutputStream());
+
+            return readFully(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    public String execCommand(String command, String param) throws IOException {
+        Process process = new ProcessBuilder()
+                .command(command, param)
+                .redirectErrorStream(true)
+                .start();
+        try {
+            InputStream in = process.getInputStream();
+            DataOutputStream out = new DataOutputStream(process.getOutputStream());
+
+            return readFully(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    public static String readFully(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length = 0;
+        while ((length = is.read(buffer)) != -1) {
+            baos.write(buffer, 0, length);
+        }
+        return baos.toString("UTF-8");
     }
 }
