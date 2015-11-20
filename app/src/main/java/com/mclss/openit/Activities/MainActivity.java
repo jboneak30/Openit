@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -43,6 +45,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> mStrArrayFile;
     private int mKeyStrIndex;
     private String mStrMountInfo;
+    private int iTick = -1;
 
     @Override
     protected void onStart() {
@@ -306,24 +311,116 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
                 Log.i(TAG, "Click:pos=" + position + ",id=" + id);
                 String tmpAddr = "确认切换到" + mAddr.get(Long.valueOf(id).intValue()) + "吗？";
-                AlertDialog.Builder applyDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-                applyDialogBuilder.setMessage(tmpAddr);
-                applyDialogBuilder.setTitle("切换NFC卡片");
-                applyDialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        applyChangeForNfcId(id);
-                        dialog.dismiss();
-                    }
-                });
-                applyDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                applyDialogBuilder.setCancelable(false);
-                applyDialogBuilder.create().show();
+//                AlertDialog.Builder applyDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+//                applyDialogBuilder.setMessage(tmpAddr);
+//                applyDialogBuilder.setTitle("切换NFC卡片");
+//                applyDialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        applyChangeForNfcId(id);
+//                        dialog.dismiss();
+//                    }
+//                });
+//                applyDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//                applyDialogBuilder.setCancelable(false);
+//                applyDialogBuilder.create().show();
+                new SweetAlertDialog(MainActivity.this, SweetAlertDialog.WARNING_TYPE)
+                        .setTitleText("确认操作")
+                        .setContentText(tmpAddr)
+                        .setCancelText("取消")
+                        .setConfirmText("是的，OpenIt")
+                        .showCancelButton(true)
+                        .setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismiss();
+                                // reuse previous dialog instance, keep widget user state, reset them if you need
+//                                sDialog.setTitleText("取消啦。")
+//                                        .setContentText("Your imaginary file is safe :)")
+//                                        .setConfirmText("OK")
+//                                        .showCancelButton(false)
+//                                        .setCancelClickListener(null)
+//                                        .setConfirmClickListener(null)
+//                                        .changeAlertType(SweetAlertDialog.ERROR_TYPE);
+
+                                // or you can new a SweetAlertDialog to show
+                               /* sDialog.dismiss();
+                                new SweetAlertDialog(SampleActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                        .setTitleText("Cancelled!")
+                                        .setContentText("Your imaginary file is safe :)")
+                                        .setConfirmText("OK")
+                                        .show();*/
+                            }
+                        })
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismiss();
+                                //Progress dlg
+                                final SweetAlertDialog pDialog = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.PROGRESS_TYPE)
+                                        .setTitleText("切换中，请稍后...");
+                                pDialog.show();
+                                pDialog.setCancelable(false);
+                                new CountDownTimer(500 * 4, 500) {
+                                    public void onTick(long millisUntilFinished) {
+                                        // you can change the progress bar color by ProgressHelper every 800 millis
+                                        iTick++;
+                                        switch (iTick) {
+                                            case 0:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.blue_btn_bg_color));
+                                                break;
+                                            case 1:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.material_deep_teal_50));
+                                                break;
+                                            case 2:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.success_stroke_color));
+                                                break;
+                                            case 3:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.material_deep_teal_20));
+                                                break;
+                                            case 4:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.material_blue_grey_80));
+                                                break;
+                                            case 5:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.warning_stroke_color));
+                                                break;
+                                            case 6:
+                                                pDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.success_stroke_color));
+                                                break;
+                                        }
+                                    }
+
+                                    public void onFinish() {
+                                        iTick = -1;
+                                        pDialog.setTitleText("切换成功，Open It!")
+                                                .setConfirmText("快去")
+                                                .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
+                                    }
+                                }.start();
+                                Thread thread=new Thread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        applyChangeForNfcId(id);
+                                    }
+                                });
+                                thread.start();
+//                                sDialog.setTitleText("Deleted!")
+//                                        .setContentText("Your imaginary file has been deleted!")
+//                                        .setConfirmText("OK")
+//                                        .showCancelButton(false)
+//                                        .setCancelClickListener(null)
+//                                        .setConfirmClickListener(null)
+//                                        .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
+                            }
+                        })
+                        .show();
             }
         });
     }
@@ -392,6 +489,9 @@ public class MainActivity extends AppCompatActivity {
             os.flush();
 
             os.writeBytes("cp -rf /data/data/com.mclss.openit/cache/openitcachefile.conf /system/etc/libnfc-nxp.conf\n");
+            os.flush();
+
+            os.writeBytes("chmod 666 /system/etc/libnfc-nxp.conf\n");
             os.flush();
 
             os.writeBytes("mount -o ro,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system\n");

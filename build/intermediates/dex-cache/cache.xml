@@ -2,46 +2,18 @@
 <items version="2" >
 
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\libs\internal_impl-23.1.1.jar"
+        jar="/Users/mengchen/Projects/nfc/Openit/app/build/intermediates/exploded-aar/com.pnikosis/materialish-progress/1.0/jars/classes.jar"
         jumboMode="false"
         revision="23.0.2"
-        sha1="a4de9c81ae239414e1ed0f86441b02abaf29bca9">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\internal_impl-23.1.1-790ea1861e42e092609fd53dd5256c9991461fb2.jar" />
+        sha1="57487745ce450899f9f250d5ae5c092a682cd041">
+        <dex dex="/Users/mengchen/Projects/nfc/Openit/app/build/intermediates/pre-dexed/debug/classes-49d53922ddfa9bf0b398171d6ed2903fa41fe31f.jar" />
     </item>
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\recyclerview-v7\23.1.1\jars\classes.jar"
+        jar="/Users/mengchen/Projects/nfc/Openit/app/build/intermediates/exploded-aar/cn.pedant.sweetalert/library/1.3/jars/classes.jar"
         jumboMode="false"
         revision="23.0.2"
-        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-2c0e6e560eac177f550df3f8a0c212f98f46caae.jar" />
-    </item>
-    <item
-        jar="D:\Android\extras\android\m2repository\com\android\support\support-annotations\23.1.1\support-annotations-23.1.1.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="8d680ba5a623724d1fb0e81c36a790f023a6cede">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\support-annotations-23.1.1-e05a52316c98a1d5ae1194531dae9b777a6da94a.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\design\23.1.1\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-b350c9445170439d1648d2460de74cabcff91b51.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.1.1\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-d379df7847652d72ae44e4ebc227291735051b9a.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-f6829880f3b43622d142eacf1b65c674542832e8.jar" />
+        sha1="0c3529d9491be892952749d252ae1defa9b1f937">
+        <dex dex="/Users/mengchen/Projects/nfc/Openit/app/build/intermediates/pre-dexed/debug/classes-5ca4d8feabec878b25101c26b882f0a88e3ddd64.jar" />
     </item>
 
 </items>
