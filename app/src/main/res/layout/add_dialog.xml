@@ -1,21 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    xmlns:wheel="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/loading"
+    android:layout_width="@dimen/alert_width"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:background="@drawable/dialog_background"
+    android:padding="10dp">
 
     <TextView
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="12dp"
+        android:layout_marginLeft="12dp"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:layout_gravity="top|left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/apply_info"
-        android:id="@+id/apply_info"
-        android:layout_gravity="center_horizontal" />
+        android:text="@string/apply_save"
+        android:id="@+id/apply_save" />
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="180dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         android:layout_height="wrap_content"
         android:id="@+id/apply_edit"
         android:layout_gravity="center_horizontal"
-        android:text="@string/apply_edit"
         android:inputType="text" />
+
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/cancel_button"
+            style="@style/dialog_blue_button"
+            android:background="@drawable/gray_button_background"
+            android:layout_marginRight="10dp"
+            android:text="@string/dialog_cancel" />
+
+        <Button
+            android:id="@+id/save_button"
+            style="@style/dialog_blue_button"
+            android:text="@string/dialog_save" />
+    </LinearLayout>
 </LinearLayout>

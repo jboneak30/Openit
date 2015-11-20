@@ -1,6 +1,7 @@
 package com.mclss.openit.Activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,13 +14,21 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.ViewAnimator;
 
 import com.mclss.openit.R;
@@ -27,6 +36,9 @@ import com.mclss.openit.logger.Log;
 import com.mclss.openit.logger.LogFragment;
 import com.mclss.openit.logger.LogWrapper;
 import com.mclss.openit.logger.MessageOnlyLogFilter;
+import com.orhanobut.dialogplus.DialogPlus;
+import com.orhanobut.dialogplus.OnItemClickListener;
+import com.orhanobut.dialogplus.ViewHolder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -42,8 +54,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -58,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean mLogShown;
     private ListView mInfoListView;
     private ArrayAdapter<String> mAddressName;
-    private List<String> mAddr;
-    private List<String> mNfcId;
+    private ArrayList<String> mAddr;
+    private ArrayList<String> mNfcId;
     private ArrayList<String> mStrArrayFile;
     private int mKeyStrIndex;
     private String mStrMountInfo;
@@ -98,15 +112,67 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //waiting for nfc card intent
+                final SweetAlertDialog pDialog = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.PROGRESS_TYPE)
+                        .setTitleText("切换中，请稍后...");
+                pDialog.show();
+                pDialog.setCancelable(false);
 
+                //save to list
+                final DialogPlus dialog = DialogPlus.newDialog(MainActivity.this)
+                        .setContentHolder(new ViewHolder(R.layout.add_dialog))
+                        .setExpanded(true)
+                        .setGravity(Gravity.CENTER)
+                        .setCancelable(false)
+                        .setContentWidth(ViewGroup.LayoutParams.WRAP_CONTENT)
+                        .setExpanded(true)  // This will enable the expand feature, (similar to android L share dialog)
+                        .create();
+                dialog.show();
+                Button btnCancel = (Button) findViewById(R.id.cancel_button);
+                btnCancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+                Button btnSave = (Button) findViewById(R.id.save_button);
+                final EditText editText = (EditText) findViewById(R.id.apply_edit);
+                btnSave.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //
+                        if (editText.getText().toString().length() == 0) {
+                            Snackbar.make(view, "并没有输入什么文字。\n真的没有输入什么文字。", Snackbar.LENGTH_SHORT)
+                                    .show();
+                        } else {
+                            String tmpStr = editText.getText().toString();
+                            saveAddress(tmpStr);
+                            dialog.dismiss();
+                        }
+                    }
+                });
+                editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                    @Override
+                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                                actionId == EditorInfo.IME_ACTION_DONE ||
+                                event.getAction() == KeyEvent.ACTION_DOWN &&
+                                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
             }
         });
 
-        if (!getRootAuth()) {
-            if (getCurrentFocus() != null) {
-                Snackbar.make(getCurrentFocus(), "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
-            }
-        }
+//        if (!getRootAuth()) {
+//            if (getCurrentFocus() != null) {
+//                Snackbar.make(getCurrentFocus(), "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
+//            }
+//        }
 
         if (!initializeData()) {
             if (getCurrentFocus() != null) {
@@ -128,6 +194,13 @@ public class MainActivity extends AppCompatActivity {
 
         initializeView();
 
+    }
+
+    private void saveAddress(String tmpStr) {
+        //
+        mNfcId.add("01B9551B");
+        //
+        mAddressName.add(tmpStr);
     }
 
     private boolean initializeMountInfo() {
@@ -274,11 +347,13 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        }
 
-        Log.i(TAG, "Adapter count=" + mInfoListView.getCount());
-        Log.i(TAG, "System mount info=" + mStrMountInfo);
+//        Log.i(TAG, "Adapter count=" + mInfoListView.getCount());
+//        Log.i(TAG, "System mount info=" + mStrMountInfo);
     }
 
     private boolean initializeData() {
+        mAddr = new ArrayList<String>();
+        mNfcId = new ArrayList<String>();
         initializePreference();
         mStrArrayFile = new ArrayList<String>();
         mAddressName = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, mAddr);
@@ -293,11 +368,11 @@ public class MainActivity extends AppCompatActivity {
         String strIndex = "Home,Office,Partner,Sex Partner";
 //        String strIndex = "";
         String[] strAddr = strIndex.split(",");
-        mAddr = Arrays.asList(strAddr);
+        Collections.addAll(mAddr, strAddr);
 
         String strNfcIndex = "01B9551B,01B9551B,01B9551B,01B9551B";
         String[] strNfcId = strNfcIndex.split(",");
-        mNfcId = Arrays.asList(strNfcId);
+        Collections.addAll(mNfcId, strNfcId);
 
     }
 
@@ -333,7 +408,7 @@ public class MainActivity extends AppCompatActivity {
                         .setTitleText("确认操作")
                         .setContentText(tmpAddr)
                         .setCancelText("取消")
-                        .setConfirmText("是的，OpenIt")
+                        .setConfirmText("嗯，走你")
                         .showCancelButton(true)
                         .setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
                             @Override
@@ -360,7 +435,6 @@ public class MainActivity extends AppCompatActivity {
                         .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
                             @Override
                             public void onClick(SweetAlertDialog sDialog) {
-                                sDialog.dismiss();
                                 //Progress dlg
                                 final SweetAlertDialog pDialog = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.PROGRESS_TYPE)
                                         .setTitleText("切换中，请稍后...");
@@ -368,7 +442,6 @@ public class MainActivity extends AppCompatActivity {
                                 pDialog.setCancelable(false);
                                 new CountDownTimer(500 * 4, 500) {
                                     public void onTick(long millisUntilFinished) {
-                                        // you can change the progress bar color by ProgressHelper every 800 millis
                                         iTick++;
                                         switch (iTick) {
                                             case 0:
@@ -402,11 +475,12 @@ public class MainActivity extends AppCompatActivity {
                                                 .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
                                     }
                                 }.start();
-                                Thread thread=new Thread(new Runnable()
-                                {
+                                //
+                                sDialog.dismiss();
+                                //
+                                Thread thread = new Thread(new Runnable() {
                                     @Override
-                                    public void run()
-                                    {
+                                    public void run() {
                                         applyChangeForNfcId(id);
                                     }
                                 });
@@ -466,38 +540,44 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        testCmd();
+        ProcessFiles("ext4 /dev/block/platform/msm_sdcc.1/by-name/system",
+                "/system/etc/libnfc-nxp.conf",
+                "/data/data/com.mclss.openit/cache/openitcachefile.conf");
     }
 
-    private void testCmd() {
+    private void ProcessFiles(String mountInfo, String nfcFileName, String cacheFileName) {
         Process suProcess;
         DataOutputStream os;
         String result = "";
+        String mountCmd = "mount -o rw,remount -t " + mountInfo + " /system\n";
+        String backupConfCmd = "cp -rf " + nfcFileName + " " + nfcFileName + ".bak\n";
+        String overwriteConfCmd = "cp -rf " + cacheFileName + " " + nfcFileName + "\n";
+        String chmodCmd = "chmod 666 " + nfcFileName + "\n";
+        String restoreMountCmd = "mount -o ro,remount -t " + mountInfo + " /system\n";
+        String exitCmd = "exit\n";
+
+        Log.i(TAG, mountCmd + backupConfCmd + overwriteConfCmd + chmodCmd + restoreMountCmd + exitCmd);
 
         try{
             suProcess = Runtime.getRuntime().exec("su");
             os= new DataOutputStream(suProcess.getOutputStream());
-            InputStream in = suProcess.getInputStream();
 
-            os.writeBytes("mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system\n");
+            os.writeBytes(mountCmd);
             os.flush();
 
-            os.writeBytes("rm /system/etc/libnfc-nxp.conf.bak\n");
+            os.writeBytes(backupConfCmd);
             os.flush();
 
-            os.writeBytes("cp -rf /system/etc/libnfc-nxp.conf /system/etc/libnfc-nxp.conf.bak\n");
+            os.writeBytes(overwriteConfCmd);
             os.flush();
 
-            os.writeBytes("cp -rf /data/data/com.mclss.openit/cache/openitcachefile.conf /system/etc/libnfc-nxp.conf\n");
+            os.writeBytes(chmodCmd);
             os.flush();
 
-            os.writeBytes("chmod 666 /system/etc/libnfc-nxp.conf\n");
+            os.writeBytes(restoreMountCmd);
             os.flush();
 
-            os.writeBytes("mount -o ro,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system\n");
-            os.flush();
-
-            os.writeBytes("exit\n");
+            os.writeBytes(exitCmd);
             os.flush();
 
             try {
@@ -514,23 +594,6 @@ public class MainActivity extends AppCompatActivity {
     public String execCommand(String command) throws IOException {
         Process process = new ProcessBuilder()
                 .command(command)
-                .redirectErrorStream(true)
-                .start();
-        try {
-            InputStream in = process.getInputStream();
-            DataOutputStream out = new DataOutputStream(process.getOutputStream());
-
-            return readFully(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return "";
-    }
-
-    public String execCommand(String command, String param) throws IOException {
-        Process process = new ProcessBuilder()
-                .command(command, param)
                 .redirectErrorStream(true)
                 .start();
         try {
