@@ -6,8 +6,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -32,6 +34,7 @@ import android.widget.TextView;
 import android.widget.ViewAnimator;
 
 import com.mclss.openit.R;
+import com.mclss.openit.controls.McSweetAlertDialog;
 import com.mclss.openit.logger.Log;
 import com.mclss.openit.logger.LogFragment;
 import com.mclss.openit.logger.LogWrapper;
@@ -69,8 +72,10 @@ public class MainActivity extends AppCompatActivity {
     private final String NFC_BRM_FILENAME = "/etc/libnfc-nxp.conf";
     private final String NFC_CACHE_FILENAME = "/data/data/com.mclss.openit/cache/openitcachefile.conf";
 
+    public static int READER_FLAGS =
+            NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK;
+
     private boolean mLogShown;
-    private ListView mInfoListView;
     private ArrayAdapter<String> mAddressName;
     private ArrayList<String> mAddr;
     private ArrayList<String> mNfcId;
@@ -78,6 +83,74 @@ public class MainActivity extends AppCompatActivity {
     private int mKeyStrIndex;
     private String mStrMountInfo;
     private int iTick = -1;
+    private McSweetAlertDialog mMcSweetAlertDialog;
+    private Handler mNfcHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == McSweetAlertDialog.MSG_NFC_GETUID) {
+                Bundle bundle = msg.getData();
+                final String strNfcUid = bundle.getString("NfcUid");
+                Log.i(TAG, strNfcUid);
+                if (mMcSweetAlertDialog != null) {
+                    NfcAdapter nfc = NfcAdapter.getDefaultAdapter(MainActivity.this);
+                    if (nfc != null) {
+                        nfc.disableReaderMode(MainActivity.this);
+                    }
+                    mMcSweetAlertDialog.dismiss();
+                    mMcSweetAlertDialog = null;
+
+                    //save to list
+                    final DialogPlus dialog = DialogPlus.newDialog(MainActivity.this)
+                            .setContentHolder(new ViewHolder(R.layout.add_dialog))
+                            .setExpanded(true)
+                            .setGravity(Gravity.CENTER)
+                            .setCancelable(false)
+                            .setContentWidth(ViewGroup.LayoutParams.WRAP_CONTENT)
+                            .setExpanded(true)  // This will enable the expand feature, (similar to android L share dialog)
+                            .create();
+                    dialog.show();
+                    Button btnCancel = (Button) findViewById(R.id.cancel_button);
+                    btnCancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            dialog.dismiss();
+                        }
+                    });
+                    Button btnSave = (Button) findViewById(R.id.save_button);
+                    final EditText editText = (EditText) findViewById(R.id.apply_edit);
+                    btnSave.setOnClickListener(new Button.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            //
+                            if (editText.getText().toString().length() == 0) {
+                                Snackbar.make(view, "并没有输入什么文字。\n真的没有输入什么文字。", Snackbar.LENGTH_SHORT)
+                                        .show();
+                            } else {
+                                String strTmp = editText.getText().toString();
+                                saveAddress(strTmp, strNfcUid);
+                                dialog.dismiss();
+                            }
+                        }
+                    });
+                    editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                        @Override
+                        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                                    actionId == EditorInfo.IME_ACTION_DONE ||
+                                    event.getAction() == KeyEvent.ACTION_DOWN &&
+                                            event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                                return true;
+                            }
+                            return false;
+                        }
+                    });
+                }
+            }
+        }
+    };
 
     @Override
     protected void onStart() {
@@ -113,66 +186,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //waiting for nfc card intent
-                final SweetAlertDialog pDialog = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.PROGRESS_TYPE)
-                        .setTitleText("切换中，请稍后...");
-                pDialog.show();
+                final McSweetAlertDialog pDialog = new McSweetAlertDialog(MainActivity.this, McSweetAlertDialog.PROGRESS_TYPE, mNfcHandler);
+                pDialog.setTitleText("请扫描需要记录的卡片...");
                 pDialog.setCancelable(false);
+                Log.i(TAG, "Enabling reader mode");
+                NfcAdapter nfc = NfcAdapter.getDefaultAdapter(MainActivity.this);
+                if (nfc != null) {
+                    nfc.enableReaderMode(MainActivity.this, pDialog, READER_FLAGS, null);
+                }
+                mMcSweetAlertDialog = pDialog;
+                pDialog.show();
 
-                //save to list
-                final DialogPlus dialog = DialogPlus.newDialog(MainActivity.this)
-                        .setContentHolder(new ViewHolder(R.layout.add_dialog))
-                        .setExpanded(true)
-                        .setGravity(Gravity.CENTER)
-                        .setCancelable(false)
-                        .setContentWidth(ViewGroup.LayoutParams.WRAP_CONTENT)
-                        .setExpanded(true)  // This will enable the expand feature, (similar to android L share dialog)
-                        .create();
-                dialog.show();
-                Button btnCancel = (Button) findViewById(R.id.cancel_button);
-                btnCancel.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        dialog.dismiss();
-                    }
-                });
-                Button btnSave = (Button) findViewById(R.id.save_button);
-                final EditText editText = (EditText) findViewById(R.id.apply_edit);
-                btnSave.setOnClickListener(new Button.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        //
-                        if (editText.getText().toString().length() == 0) {
-                            Snackbar.make(view, "并没有输入什么文字。\n真的没有输入什么文字。", Snackbar.LENGTH_SHORT)
-                                    .show();
-                        } else {
-                            String tmpStr = editText.getText().toString();
-                            saveAddress(tmpStr);
-                            dialog.dismiss();
-                        }
-                    }
-                });
-                editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        if (actionId == EditorInfo.IME_ACTION_SEARCH ||
-                                actionId == EditorInfo.IME_ACTION_DONE ||
-                                event.getAction() == KeyEvent.ACTION_DOWN &&
-                                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
             }
         });
 
-//        if (!getRootAuth()) {
-//            if (getCurrentFocus() != null) {
-//                Snackbar.make(getCurrentFocus(), "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
-//            }
-//        }
+        if (!getRootAuth()) {
+            if (getCurrentFocus() != null) {
+                Snackbar.make(getCurrentFocus(), "您的手机并没有获得ROOT权限。\n请找到相关人士帮助您ROOT手机。", Snackbar.LENGTH_LONG).show();
+            }
+        }
 
         if (!initializeData()) {
             if (getCurrentFocus() != null) {
@@ -196,11 +228,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void saveAddress(String tmpStr) {
+    private void saveAddress(String strTmp, String strNfcUid) {
         //
-        mNfcId.add("01B9551B");
+        mNfcId.add(strNfcUid);
         //
-        mAddressName.add(tmpStr);
+        mAddressName.add(strTmp);
+        //
+        Log.i(TAG, "Save: index=" + strTmp + " UID=" + strNfcUid);
     }
 
     private boolean initializeMountInfo() {
@@ -377,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeView() {
-        mInfoListView = (ListView)findViewById(R.id.info_listView);
+        ListView mInfoListView = (ListView) findViewById(R.id.info_listView);
         mInfoListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mInfoListView.setAdapter(mAddressName);
 
