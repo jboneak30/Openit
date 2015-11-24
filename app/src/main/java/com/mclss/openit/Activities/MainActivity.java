@@ -140,8 +140,9 @@ public class MainActivity extends AppCompatActivity {
                                     actionId == EditorInfo.IME_ACTION_DONE ||
                                     event.getAction() == KeyEvent.ACTION_DOWN &&
                                             event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+//                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+//                                imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                                editText.clearFocus();
                                 return true;
                             }
                             return false;
@@ -229,12 +230,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveAddress(String strTmp, String strNfcUid) {
+        Log.i(TAG, "Save: index=" + strTmp + " UID=" + strNfcUid);
+        SharedPreferences sharedPreferences = getSharedPreferences("token",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(strTmp, strNfcUid);
+        editor.putString("index", addAddressIndex(strTmp));
+        editor.apply();
         //
         mNfcId.add(strNfcUid);
         //
-        mAddressName.add(strTmp);
+        mAddr.add(strTmp);
         //
-        Log.i(TAG, "Save: index=" + strTmp + " UID=" + strNfcUid);
+    }
+
+    private String addAddressIndex(String strAddr) {
+        String strIndex = "";
+        for (String strTmp:
+             mAddr) {
+            strIndex += "," + strTmp;
+        }
+        strIndex += "," + strAddr;
+
+        Log.i(TAG, "Refresh index: " + strIndex);
+
+        return strIndex;
     }
 
     private boolean initializeMountInfo() {
@@ -397,16 +418,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializePreference() {
         SharedPreferences sharedPreferences = getSharedPreferences("token",
-                Activity.MODE_PRIVATE);
+                MODE_PRIVATE);
 
-        String strIndex = "Home,Office,Partner,Sex Partner";
-//        String strIndex = "";
+        String strIndex = sharedPreferences.getString("index", "");
+//        String strIndex = "Home,office,partner,sexmate";
+        android.util.Log.i(TAG, strIndex);
         String[] strAddr = strIndex.split(",");
         Collections.addAll(mAddr, strAddr);
 
-        String strNfcIndex = "01B9551B,01B9551B,01B9551B,01B9551B";
-        String[] strNfcId = strNfcIndex.split(",");
-        Collections.addAll(mNfcId, strNfcId);
+        for (String strNfcId :
+                strAddr) {
+            mNfcId.add(sharedPreferences.getString(strNfcId, ""));
+        }
+//        String strNfcIndex = "01B9551B,01B9551B,01B9551B,01B9551B";
+//        String[] strNfcId = strNfcIndex.split(",");
+//        Collections.addAll(mNfcId, strNfcId);
 
     }
 

@@ -2,74 +2,74 @@
 <items version="2" >
 
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.github.dmytrodanylyk.circular-progress-button\library\1.1.3\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="8a6ed980c74ad35b2dfc4e1daf97bfc0eea5d7c9">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-4b2016beda2e1931e62708793f85b7ad54931081.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\cn.pedant.sweetalert\library\1.3\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="0c3529d9491be892952749d252ae1defa9b1f937">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-beb41a79b836abd114a81ad611d87a473259e591.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.1.1\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-d379df7847652d72ae44e4ebc227291735051b9a.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\libs\internal_impl-23.1.1.jar"
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\libs\internal_impl-23.1.1.jar"
         jumboMode="false"
         revision="23.0.2"
         sha1="a4de9c81ae239414e1ed0f86441b02abaf29bca9">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\internal_impl-23.1.1-790ea1861e42e092609fd53dd5256c9991461fb2.jar" />
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\internal_impl-23.1.1-c09a91283ca3e5b5f9c310f843315f10b05fbc0d.jar" />
     </item>
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\classes.jar"
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\cn.pedant.sweetalert\library\1.3\jars\classes.jar"
         jumboMode="false"
         revision="23.0.2"
-        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-f6829880f3b43622d142eacf1b65c674542832e8.jar" />
+        sha1="0c3529d9491be892952749d252ae1defa9b1f937">
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-b575080312a378bc8b2491c3b853570b526d41ba.jar" />
     </item>
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\design\23.1.1\jars\classes.jar"
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.1.1\jars\classes.jar"
         jumboMode="false"
         revision="23.0.2"
-        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-b350c9445170439d1648d2460de74cabcff91b51.jar" />
+        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-eb83dc77802613a7400352e74b0464a5e3d528fb.jar" />
     </item>
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\recyclerview-v7\23.1.1\jars\classes.jar"
-        jumboMode="false"
-        revision="23.0.2"
-        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-2c0e6e560eac177f550df3f8a0c212f98f46caae.jar" />
-    </item>
-    <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.orhanobut\dialogplus\1.10\jars\classes.jar"
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.orhanobut\dialogplus\1.10\jars\classes.jar"
         jumboMode="false"
         revision="23.0.2"
         sha1="95373ed729c03b988eb4488d9758287e1ea5d21e">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-1763015da10c795798afbb055d2af96e4d1e483e.jar" />
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-91d65ae677f14005c7f0f1b454c2ca0f0dca4f38.jar" />
     </item>
     <item
-        jar="D:\program\nfc\Openit\app\build\intermediates\exploded-aar\com.pnikosis\materialish-progress\1.0\jars\classes.jar"
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.pnikosis\materialish-progress\1.0\jars\classes.jar"
         jumboMode="false"
         revision="23.0.2"
         sha1="57487745ce450899f9f250d5ae5c092a682cd041">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-1320aac9d87c559dcc6cc210fe3b1499ba9ab0de.jar" />
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-7afe60c37d11cda70a176809c3f138c6740a2c72.jar" />
     </item>
     <item
-        jar="D:\Android\extras\android\m2repository\com\android\support\support-annotations\23.1.1\support-annotations-23.1.1.jar"
+        jar="E:\android\sdk\extras\android\m2repository\com\android\support\support-annotations\23.1.1\support-annotations-23.1.1.jar"
         jumboMode="false"
         revision="23.0.2"
         sha1="8d680ba5a623724d1fb0e81c36a790f023a6cede">
-        <dex dex="D:\program\nfc\Openit\app\build\intermediates\pre-dexed\debug\support-annotations-23.1.1-e05a52316c98a1d5ae1194531dae9b777a6da94a.jar" />
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\support-annotations-23.1.1-529bcc7c105481e9839691151ba9c896529b3dc7.jar" />
+    </item>
+    <item
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\recyclerview-v7\23.1.1\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-826fc559aac070715bab4207428fc4ea598622ec.jar" />
+    </item>
+    <item
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\design\23.1.1\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-1e881aa8d3b9b2ff241796611752617f35500bb3.jar" />
+    </item>
+    <item
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-f64e2fa2b2b8d5c98e0a81a2a5250fe5831a1cab.jar" />
+    </item>
+    <item
+        jar="E:\github\nfc\Openit\app\build\intermediates\exploded-aar\com.github.dmytrodanylyk.circular-progress-button\library\1.1.3\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="8a6ed980c74ad35b2dfc4e1daf97bfc0eea5d7c9">
+        <dex dex="E:\github\nfc\Openit\app\build\intermediates\pre-dexed\debug\classes-b376e7d3739ec90d7cc0aa2003908b509094a2d5.jar" />
     </item>
 
 </items>
