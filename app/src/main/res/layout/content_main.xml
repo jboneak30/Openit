@@ -24,12 +24,19 @@
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:id="@+id/info_textview"
                 style="@style/AppTheme"
                 android:text="@string/display_init"
                 android:padding="@dimen/abc_text_size_medium_material"
-                android:textAppearance="@android:style/TextAppearance.Holo.Large" />
+                android:textAppearance="@android:style/TextAppearance.Holo.Large"
+                android:textColor="@color/text_color"/>
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/info_listView"
+                android:clickable="true" />
 
             <fragment
                 android:name="com.mclss.openit.logger.LogFragment"
@@ -43,11 +50,6 @@
                 <!--android:layout_height="fill_parent"-->
                 <!--android:id="@+id/scrollView" >-->
 
-                <ListView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/info_listView"
-                    android:clickable="true" />
             <!--</ScrollView>-->
 
         </ViewAnimator>

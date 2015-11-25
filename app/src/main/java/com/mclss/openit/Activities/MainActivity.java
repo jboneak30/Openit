@@ -84,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
     private String mStrMountInfo;
     private int iTick = -1;
     private McSweetAlertDialog mMcSweetAlertDialog;
+    private int mMenuId;
+
     private Handler mNfcHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -215,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (!initializeMountInfo()) {
             if (getCurrentFocus() != null) {
-                Snackbar.make(getCurrentFocus(), "并没有找到存储的nfc卡片信息。", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(getCurrentFocus(), "并没有找到文件系统挂载信息。", Snackbar.LENGTH_LONG).show();
             }
         }
 
@@ -241,17 +243,25 @@ public class MainActivity extends AppCompatActivity {
         //
         mNfcId.add(strNfcUid);
         //
-        mAddr.add(strTmp);
+        mAddressName.add(strTmp);
         //
     }
 
     private String addAddressIndex(String strAddr) {
         String strIndex = "";
-        for (String strTmp:
-             mAddr) {
-            strIndex += "," + strTmp;
+        int sizeofmAddr = mAddr.size();
+        if (sizeofmAddr > 0) {
+            strIndex += mAddr.get(0);
+            for (int i = 1; i < sizeofmAddr; i++) {
+                strIndex += "," + mAddr.get(i);
+            }
+            strIndex += "," + strAddr;
         }
-        strIndex += "," + strAddr;
+        else {
+            strIndex += strAddr;
+            ViewAnimator output = (ViewAnimator) findViewById(R.id.log_wrapper);
+            output.setDisplayedChild(1);
+        }
 
         Log.i(TAG, "Refresh index: " + strIndex);
 
@@ -271,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
                 ) {
             if (str.contains("/system")) {
                 mStrMountInfo = str.split(",")[0];
+                android.util.Log.i(TAG, "mountinfo: " + mStrMountInfo);
                 return true;
             }
         }
@@ -367,9 +378,10 @@ public class MainActivity extends AppCompatActivity {
                 mLogShown = !mLogShown;
                 ViewAnimator output = (ViewAnimator) findViewById(R.id.log_wrapper);
                 if (mLogShown) {
-                    output.setDisplayedChild(1);
-                } else {
+                    mMenuId = output.getDisplayedChild();
                     output.setDisplayedChild(2);
+                } else {
+                    output.setDisplayedChild(mMenuId);
                 }
                 supportInvalidateOptionsMenu();
                 return true;
@@ -417,17 +429,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializePreference() {
+        ViewAnimator output = (ViewAnimator) findViewById(R.id.log_wrapper);
         SharedPreferences sharedPreferences = getSharedPreferences("token",
                 MODE_PRIVATE);
 
         String strIndex = sharedPreferences.getString("index", "");
 //        String strIndex = "Home,office,partner,sexmate";
         android.util.Log.i(TAG, strIndex);
-        String[] strAddr = strIndex.split(",");
-        Collections.addAll(mAddr, strAddr);
+        if (!Objects.equals("", strIndex)) {
+            String[] strAddr = strIndex.split(",");
+            Collections.addAll(mAddr, strAddr);
+            output.setDisplayedChild(1);
+        } else {
+            output.setDisplayedChild(0);
+        }
 
         for (String strNfcId :
-                strAddr) {
+                mAddr) {
             mNfcId.add(sharedPreferences.getString(strNfcId, ""));
         }
 //        String strNfcIndex = "01B9551B,01B9551B,01B9551B,01B9551B";
@@ -600,7 +618,9 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        ProcessFiles("ext4 /dev/block/platform/msm_sdcc.1/by-name/system",
+        // TODO: customize mount info
+        String[] strArrayMountInfo = mStrMountInfo.split(" ");
+        ProcessFiles(strArrayMountInfo[2] + " " + strArrayMountInfo[0],
                 "/system/etc/libnfc-nxp.conf",
                 "/data/data/com.mclss.openit/cache/openitcachefile.conf");
     }
@@ -608,7 +628,6 @@ public class MainActivity extends AppCompatActivity {
     private void ProcessFiles(String mountInfo, String nfcFileName, String cacheFileName) {
         Process suProcess;
         DataOutputStream os;
-        String result = "";
         String mountCmd = "mount -o rw,remount -t " + mountInfo + " /system\n";
         String backupConfCmd = "cp -rf " + nfcFileName + " " + nfcFileName + ".bak\n";
         String overwriteConfCmd = "cp -rf " + cacheFileName + " " + nfcFileName + "\n";
@@ -658,8 +677,6 @@ public class MainActivity extends AppCompatActivity {
                 .start();
         try {
             InputStream in = process.getInputStream();
-            DataOutputStream out = new DataOutputStream(process.getOutputStream());
-
             return readFully(in);
         } catch (IOException e) {
             e.printStackTrace();
